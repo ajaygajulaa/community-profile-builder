@@ -3,29 +3,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, Heart, MapPin } from "lucide-react";
+import { Users, Shield, Heart, MapPin, ArrowLeft } from "lucide-react";
 import { mockUsers } from "@/utils/mockData";
 
 interface UserProfileProps {
   currentUser: any;
   onLogout: () => void;
+  onBackToHome: () => void;
 }
 
-const UserProfile = ({ currentUser, onLogout }: UserProfileProps) => {
+const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
+              <Button onClick={onBackToHome} variant="ghost" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">Village Youth Hub</h1>
             </div>
-            <Button onClick={onLogout} variant="outline">
-              Logout
-            </Button>
           </div>
         </div>
       </div>
@@ -106,6 +108,22 @@ const UserProfile = ({ currentUser, onLogout }: UserProfileProps) => {
                   <p className="text-2xl font-bold text-purple-600">5</p>
                   <p className="text-sm text-gray-600">Years Established</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Logout Button at Bottom */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <Button 
+                  onClick={onLogout} 
+                  variant="destructive" 
+                  size="lg"
+                  className="w-full md:w-auto"
+                >
+                  Logout
+                </Button>
               </div>
             </CardContent>
           </Card>
