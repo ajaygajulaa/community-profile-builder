@@ -1,10 +1,14 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
+import { Shield, Upload, Coins, Heart, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockUsers } from "@/utils/mockData";
+import { mockUsers, mockFinances } from "@/utils/mockData";
 
 interface AdminDashboardProps {
   currentUser: any;
@@ -13,6 +17,10 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
   const { toast } = useToast();
+  const [ganeshAmount, setGaneshAmount] = useState(mockFinances.ganeshChanda.currentAmount);
+  const [goldAmount, setGoldAmount] = useState(mockFinances.marriageGold.totalFund);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadDescription, setUploadDescription] = useState("");
 
   const deleteUser = (userId: number) => {
     const index = mockUsers.findIndex(u => u.id === userId);
@@ -23,6 +31,41 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
         description: "User has been removed from the community",
       });
     }
+  };
+
+  const updateGaneshAmount = () => {
+    mockFinances.ganeshChanda.currentAmount = ganeshAmount;
+    toast({
+      title: "Ganesh Chanda Updated",
+      description: `Amount updated to ₹${ganeshAmount.toLocaleString()}`,
+    });
+  };
+
+  const updateGoldAmount = () => {
+    mockFinances.marriageGold.totalFund = goldAmount;
+    toast({
+      title: "Marriage Gold Fund Updated",
+      description: `Amount updated to ₹${goldAmount.toLocaleString()}`,
+    });
+  };
+
+  const handleFileUpload = () => {
+    if (!selectedFile) {
+      toast({
+        title: "No file selected",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate file upload
+    toast({
+      title: "File uploaded successfully",
+      description: `${selectedFile.name} has been uploaded to the gallery`,
+    });
+    setSelectedFile(null);
+    setUploadDescription("");
   };
 
   return (
@@ -57,6 +100,97 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
             </CardHeader>
           </Card>
 
+          {/* Financial Management */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Coins className="w-5 h-5 text-orange-600" />
+                  <span>Ganesh Chanda Management</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="ganesh-amount">Current Amount (₹)</Label>
+                  <Input
+                    id="ganesh-amount"
+                    type="number"
+                    value={ganeshAmount}
+                    onChange={(e) => setGaneshAmount(Number(e.target.value))}
+                  />
+                </div>
+                <Button onClick={updateGaneshAmount} className="w-full">
+                  Update Ganesh Chanda Amount
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Heart className="w-5 h-5 text-pink-600" />
+                  <span>Marriage Gold Fund</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="gold-amount">Total Fund (₹)</Label>
+                  <Input
+                    id="gold-amount"
+                    type="number"
+                    value={goldAmount}
+                    onChange={(e) => setGoldAmount(Number(e.target.value))}
+                  />
+                </div>
+                <Button onClick={updateGoldAmount} className="w-full">
+                  Update Marriage Gold Fund
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* File Upload */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Upload className="w-5 h-5" />
+                <span>Upload Files & Videos</span>
+              </CardTitle>
+              <CardDescription>
+                Upload photos and videos to the community gallery
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="file-upload">Select File</Label>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Add a description for this file..."
+                  value={uploadDescription}
+                  onChange={(e) => setUploadDescription(e.target.value)}
+                />
+              </div>
+              <Button onClick={handleFileUpload} className="w-full" disabled={!selectedFile}>
+                Upload File
+              </Button>
+              {selectedFile && (
+                <p className="text-sm text-gray-600">
+                  Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Community Members */}
           <Card>
             <CardHeader>
               <CardTitle>Community Members</CardTitle>
@@ -99,10 +233,14 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
             </CardContent>
           </Card>
 
+          {/* Statistics */}
           <div className="grid md:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Total Members</CardTitle>
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Users className="w-5 h-5" />
+                  <span>Total Members</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-green-600">
@@ -112,20 +250,28 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Average Age</CardTitle>
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Coins className="w-5 h-5" />
+                  <span>Ganesh Fund</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-blue-600">
-                  {Math.round(mockUsers.filter(u => u.role === 'member').reduce((sum, u) => sum + u.age, 0) / mockUsers.filter(u => u.role === 'member').length)}
+                <p className="text-3xl font-bold text-orange-600">
+                  ₹{ganeshAmount.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">New This Month</CardTitle>
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Heart className="w-5 h-5" />
+                  <span>Marriage Fund</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-purple-600">3</p>
+                <p className="text-3xl font-bold text-pink-600">
+                  ₹{goldAmount.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
           </div>

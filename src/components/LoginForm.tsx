@@ -116,7 +116,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 <div className="text-sm text-gray-600 mt-4">
                   <p className="font-medium">Demo Accounts:</p>
                   <p>User: priya.sharma@gmail.com</p>
-                  <p>Admin: admin.village@gmail.com</p>
+                  <p>Admin: admin@villageyouth.com</p>
                   <p className="text-xs mt-1">Password: any text</p>
                 </div>
               </TabsContent>
