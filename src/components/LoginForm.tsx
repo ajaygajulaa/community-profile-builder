@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,19 +28,34 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleLogin = () => {
     const user = mockUsers.find(u => u.email === loginEmail);
+    
     if (user) {
-      onLogin(user);
-      toast({
-        title: "Welcome back!",
-        description: `Successfully logged in as ${user.name}`,
-      });
-    } else {
-      toast({
-        title: "Login failed",
-        description: "Invalid email or password",
-        variant: "destructive",
-      });
+      // Check for admin credentials
+      if (user.role === "admin" && loginEmail === "admin@gmail.com" && loginPassword === "admin@123") {
+        onLogin(user);
+        toast({
+          title: "Welcome back Admin!",
+          description: `Successfully logged in as ${user.name}`,
+        });
+        return;
+      }
+      
+      // For regular users, any password works (demo purposes)
+      if (user.role === "member") {
+        onLogin(user);
+        toast({
+          title: "Welcome back!",
+          description: `Successfully logged in as ${user.name}`,
+        });
+        return;
+      }
     }
+    
+    toast({
+      title: "Login failed",
+      description: "Invalid email or password",
+      variant: "destructive",
+    });
   };
 
   const handleRegister = () => {
@@ -115,9 +129,9 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 </Button>
                 <div className="text-sm text-gray-600 mt-4">
                   <p className="font-medium">Demo Accounts:</p>
-                  <p>User: priya.sharma@gmail.com</p>
-                  <p>Admin: admin@villageyouth.com</p>
-                  <p className="text-xs mt-1">Password: any text</p>
+                  <p>User: priya.sharma@gmail.com (any password)</p>
+                  <p>Admin: admin@gmail.com</p>
+                  <p>Admin Password: admin@123</p>
                 </div>
               </TabsContent>
               

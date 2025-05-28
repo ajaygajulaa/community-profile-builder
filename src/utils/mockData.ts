@@ -3,7 +3,7 @@ export const mockUsers = [
   {
     id: 1,
     name: "Admin User",
-    email: "admin@villageyouth.com",
+    email: "admin@gmail.com",
     phone: "+91 98765 43210",
     age: 35,
     occupation: "Community Administrator",
