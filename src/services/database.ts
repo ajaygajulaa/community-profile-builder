@@ -43,7 +43,11 @@ export const getUsers = async (): Promise<User[]> => {
     .order('created_at', { ascending: true });
   
   if (error) throw error;
-  return data || [];
+  
+  return (data || []).map(user => ({
+    ...user,
+    role: user.role as 'admin' | 'member'
+  }));
 };
 
 export const getUserByEmail = async (email: string): Promise<User | null> => {
@@ -54,7 +58,13 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
     .single();
   
   if (error && error.code !== 'PGRST116') throw error;
-  return data || null;
+  
+  if (!data) return null;
+  
+  return {
+    ...data,
+    role: data.role as 'admin' | 'member'
+  };
 };
 
 export const createUser = async (userData: Omit<User, 'id'>): Promise<User> => {
@@ -65,7 +75,11 @@ export const createUser = async (userData: Omit<User, 'id'>): Promise<User> => {
     .single();
   
   if (error) throw error;
-  return data;
+  
+  return {
+    ...data,
+    role: data.role as 'admin' | 'member'
+  };
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
@@ -84,7 +98,11 @@ export const getFinancialData = async (): Promise<FinancialData[]> => {
     .select('*');
   
   if (error) throw error;
-  return data || [];
+  
+  return (data || []).map(item => ({
+    ...item,
+    type: item.type as 'ganesh_chanda' | 'marriage_gold'
+  }));
 };
 
 export const updateFinancialData = async (type: 'ganesh_chanda' | 'marriage_gold', updates: Partial<FinancialData>): Promise<void> => {
@@ -104,7 +122,11 @@ export const getMediaFiles = async (): Promise<MediaFile[]> => {
     .order('uploaded_at', { ascending: false });
   
   if (error) throw error;
-  return data || [];
+  
+  return (data || []).map(file => ({
+    ...file,
+    file_type: file.file_type as 'image' | 'video'
+  }));
 };
 
 export const uploadMediaFile = async (file: File, description?: string, uploadedBy?: string): Promise<MediaFile> => {
@@ -133,5 +155,9 @@ export const uploadMediaFile = async (file: File, description?: string, uploaded
     .single();
 
   if (error) throw error;
-  return data;
+  
+  return {
+    ...data,
+    file_type: data.file_type as 'image' | 'video'
+  };
 };
