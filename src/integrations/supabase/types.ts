@@ -9,7 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      financial_data: {
+        Row: {
+          contributors: number | null
+          current_amount: number | null
+          id: string
+          last_recipient: string | null
+          recent_support: number | null
+          target_amount: number | null
+          total_fund: number | null
+          total_members: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          contributors?: number | null
+          current_amount?: number | null
+          id?: string
+          last_recipient?: string | null
+          recent_support?: number | null
+          target_amount?: number | null
+          total_fund?: number | null
+          total_members?: number | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          contributors?: number | null
+          current_amount?: number | null
+          id?: string
+          last_recipient?: string | null
+          recent_support?: number | null
+          target_amount?: number | null
+          total_fund?: number | null
+          total_members?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      media_files: {
+        Row: {
+          description: string | null
+          file_size: number | null
+          file_type: string
+          filename: string
+          id: string
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          file_size?: number | null
+          file_type: string
+          filename: string
+          id?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          file_size?: number | null
+          file_type?: string
+          filename?: string
+          id?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          email: string
+          id: string
+          interests: string[] | null
+          join_date: string | null
+          name: string
+          occupation: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          email: string
+          id?: string
+          interests?: string[] | null
+          join_date?: string | null
+          name: string
+          occupation?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          interests?: string[] | null
+          join_date?: string | null
+          name?: string
+          occupation?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

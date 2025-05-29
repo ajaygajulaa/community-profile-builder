@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,48 +8,111 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Upload, Coins, Heart, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockUsers, mockFinances } from "@/utils/mockData";
+import { getUsers, getFinancialData, updateFinancialData, deleteUser, uploadMediaFile, type User, type FinancialData } from "@/services/database";
 
 interface AdminDashboardProps {
-  currentUser: any;
+  currentUser: User;
   onLogout: () => void;
 }
 
 const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
   const { toast } = useToast();
-  const [ganeshAmount, setGaneshAmount] = useState(mockFinances.ganeshChanda.currentAmount);
-  const [goldAmount, setGoldAmount] = useState(mockFinances.marriageGold.totalFund);
+  const [users, setUsers] = useState<User[]>([]);
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
+  const [ganeshAmount, setGaneshAmount] = useState(0);
+  const [goldAmount, setGoldAmount] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadDescription, setUploadDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const deleteUser = (userId: number) => {
-    const index = mockUsers.findIndex(u => u.id === userId);
-    if (index !== -1) {
-      mockUsers.splice(index, 1);
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [usersData, financialDataResult] = await Promise.all([
+        getUsers(),
+        getFinancialData()
+      ]);
+      
+      setUsers(usersData);
+      setFinancialData(financialDataResult);
+      
+      const ganeshData = financialDataResult.find(f => f.type === 'ganesh_chanda');
+      const goldData = financialDataResult.find(f => f.type === 'marriage_gold');
+      
+      setGaneshAmount(ganeshData?.current_amount || 0);
+      setGoldAmount(goldData?.total_fund || 0);
+    } catch (error) {
+      console.error('Error loading data:', error);
       toast({
-        title: "User removed",
-        description: "User has been removed from the community",
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive",
       });
     }
   };
 
-  const updateGaneshAmount = () => {
-    mockFinances.ganeshChanda.currentAmount = ganeshAmount;
-    toast({
-      title: "Ganesh Chanda Updated",
-      description: `Amount updated to ₹${ganeshAmount.toLocaleString()}`,
-    });
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      setUsers(users.filter(u => u.id !== userId));
+      toast({
+        title: "User removed",
+        description: "User has been removed from the community",
+      });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove user",
+        variant: "destructive",
+      });
+    }
   };
 
-  const updateGoldAmount = () => {
-    mockFinances.marriageGold.totalFund = goldAmount;
-    toast({
-      title: "Marriage Gold Fund Updated",
-      description: `Amount updated to ₹${goldAmount.toLocaleString()}`,
-    });
+  const updateGaneshAmount = async () => {
+    setIsLoading(true);
+    try {
+      await updateFinancialData('ganesh_chanda', { current_amount: ganeshAmount });
+      toast({
+        title: "Ganesh Chanda Updated",
+        description: `Amount updated to ₹${ganeshAmount.toLocaleString()}`,
+      });
+    } catch (error) {
+      console.error('Error updating Ganesh amount:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update Ganesh Chanda amount",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFileUpload = () => {
+  const updateGoldAmount = async () => {
+    setIsLoading(true);
+    try {
+      await updateFinancialData('marriage_gold', { total_fund: goldAmount });
+      toast({
+        title: "Marriage Gold Fund Updated",
+        description: `Amount updated to ₹${goldAmount.toLocaleString()}`,
+      });
+    } catch (error) {
+      console.error('Error updating Gold amount:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update Marriage Gold Fund",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = async () => {
     if (!selectedFile) {
       toast({
         title: "No file selected",
@@ -59,13 +122,25 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
       return;
     }
 
-    // Simulate file upload
-    toast({
-      title: "File uploaded successfully",
-      description: `${selectedFile.name} has been uploaded to the gallery`,
-    });
-    setSelectedFile(null);
-    setUploadDescription("");
+    setIsLoading(true);
+    try {
+      await uploadMediaFile(selectedFile, uploadDescription, currentUser.id);
+      toast({
+        title: "File uploaded successfully",
+        description: `${selectedFile.name} has been uploaded to the gallery`,
+      });
+      setSelectedFile(null);
+      setUploadDescription("");
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -119,8 +194,12 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
                     onChange={(e) => setGaneshAmount(Number(e.target.value))}
                   />
                 </div>
-                <Button onClick={updateGaneshAmount} className="w-full">
-                  Update Ganesh Chanda Amount
+                <Button 
+                  onClick={updateGaneshAmount} 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Updating..." : "Update Ganesh Chanda Amount"}
                 </Button>
               </CardContent>
             </Card>
@@ -142,8 +221,12 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
                     onChange={(e) => setGoldAmount(Number(e.target.value))}
                   />
                 </div>
-                <Button onClick={updateGoldAmount} className="w-full">
-                  Update Marriage Gold Fund
+                <Button 
+                  onClick={updateGoldAmount} 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Updating..." : "Update Marriage Gold Fund"}
                 </Button>
               </CardContent>
             </Card>
@@ -179,8 +262,12 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
                   onChange={(e) => setUploadDescription(e.target.value)}
                 />
               </div>
-              <Button onClick={handleFileUpload} className="w-full" disabled={!selectedFile}>
-                Upload File
+              <Button 
+                onClick={handleFileUpload} 
+                className="w-full" 
+                disabled={!selectedFile || isLoading}
+              >
+                {isLoading ? "Uploading..." : "Upload File"}
               </Button>
               {selectedFile && (
                 <p className="text-sm text-gray-600">
@@ -195,12 +282,12 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
             <CardHeader>
               <CardTitle>Community Members</CardTitle>
               <CardDescription>
-                Total members: {mockUsers.filter(u => u.role === 'member').length}
+                Total members: {users.filter(u => u.role === 'member').length}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockUsers.filter(u => u.role === 'member').map((user) => (
+                {users.filter(u => u.role === 'member').map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -216,10 +303,10 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant="outline">
-                        Joined {user.joinDate}
+                        Joined {user.join_date}
                       </Badge>
                       <Button
-                        onClick={() => deleteUser(user.id)}
+                        onClick={() => handleDeleteUser(user.id)}
                         variant="outline"
                         size="sm"
                         className="text-red-600 hover:text-red-700"
@@ -244,7 +331,7 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-green-600">
-                  {mockUsers.filter(u => u.role === 'member').length}
+                  {users.filter(u => u.role === 'member').length}
                 </p>
               </CardContent>
             </Card>

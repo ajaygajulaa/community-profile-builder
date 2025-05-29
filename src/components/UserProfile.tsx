@@ -1,18 +1,41 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Heart, MapPin, ArrowLeft } from "lucide-react";
-import { mockUsers } from "@/utils/mockData";
+import { getUsers, type User } from "@/services/database";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileProps {
-  currentUser: any;
+  currentUser: User;
   onLogout: () => void;
   onBackToHome: () => void;
 }
 
 const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) => {
+  const [totalMembers, setTotalMembers] = useState(0);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadMemberCount();
+  }, []);
+
+  const loadMemberCount = async () => {
+    try {
+      const users = await getUsers();
+      setTotalMembers(users.filter(u => u.role === 'member').length);
+    } catch (error) {
+      console.error('Error loading member count:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load member count",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
       <div className="bg-white shadow-sm border-b">
@@ -46,7 +69,7 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
                   <CardTitle className="text-2xl">{currentUser.name}</CardTitle>
                   <CardDescription className="flex items-center mt-1">
                     <MapPin className="w-4 h-4 mr-1" />
-                    Community Member since {currentUser.joinDate}
+                    Community Member since {currentUser.join_date}
                   </CardDescription>
                 </div>
               </div>
@@ -60,26 +83,30 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                    <p className="text-gray-900">{currentUser.phone}</p>
+                    <p className="text-gray-900">{currentUser.phone || 'Not provided'}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Age</Label>
-                    <p className="text-gray-900">{currentUser.age} years old</p>
+                    <p className="text-gray-900">{currentUser.age ? `${currentUser.age} years old` : 'Not provided'}</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Occupation</Label>
-                    <p className="text-gray-900">{currentUser.occupation}</p>
+                    <p className="text-gray-900">{currentUser.occupation || 'Not provided'}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Interests</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {currentUser.interests.map((interest: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {interest}
-                        </Badge>
-                      ))}
+                      {currentUser.interests && currentUser.interests.length > 0 ? (
+                        currentUser.interests.map((interest: string, index: number) => (
+                          <Badge key={index} variant="secondary">
+                            {interest}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No interests listed</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -95,7 +122,7 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-green-600">{mockUsers.filter(u => u.role === 'member').length}</p>
+                  <p className="text-2xl font-bold text-green-600">{totalMembers}</p>
                   <p className="text-sm text-gray-600">Active Members</p>
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">

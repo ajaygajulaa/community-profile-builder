@@ -1,16 +1,52 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Coins, Heart, Camera, Video, User } from "lucide-react";
+import { getFinancialData, getMediaFiles, type User as UserType, type FinancialData, type MediaFile } from "@/services/database";
+import { useToast } from "@/hooks/use-toast";
 
 interface HomeProps {
-  currentUser: any;
+  currentUser: UserType;
   onLogout: () => void;
   onProfileClick: () => void;
 }
 
 const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [financialDataResult, mediaFilesResult] = await Promise.all([
+        getFinancialData(),
+        getMediaFiles()
+      ]);
+      
+      setFinancialData(financialDataResult);
+      setMediaFiles(mediaFilesResult);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const ganeshData = financialData.find(f => f.type === 'ganesh_chanda');
+  const goldData = financialData.find(f => f.type === 'marriage_gold');
+
+  const photoFiles = mediaFiles.filter(file => file.file_type === 'image');
+  const videoFiles = mediaFiles.filter(file => file.file_type === 'video');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
       <div className="bg-white shadow-sm border-b">
@@ -64,13 +100,13 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-orange-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-orange-800 mb-2">Current Collection</h3>
-                    <p className="text-2xl font-bold text-orange-600">₹25,500</p>
-                    <p className="text-sm text-orange-600">Target: ₹50,000</p>
+                    <p className="text-2xl font-bold text-orange-600">₹{ganeshData?.current_amount?.toLocaleString() || '0'}</p>
+                    <p className="text-sm text-orange-600">Target: ₹{ganeshData?.target_amount?.toLocaleString() || '50,000'}</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-green-800 mb-2">Contributors</h3>
-                    <p className="text-2xl font-bold text-green-600">18</p>
-                    <p className="text-sm text-green-600">out of 25 members</p>
+                    <p className="text-2xl font-bold text-green-600">{ganeshData?.contributors || 0}</p>
+                    <p className="text-sm text-green-600">out of {ganeshData?.total_members || 0} members</p>
                   </div>
                 </div>
                 <div className="mt-6">
@@ -96,13 +132,13 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-pink-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-pink-800 mb-2">Total Fund</h3>
-                    <p className="text-2xl font-bold text-pink-600">₹1,25,000</p>
+                    <p className="text-2xl font-bold text-pink-600">₹{goldData?.total_fund?.toLocaleString() || '0'}</p>
                     <p className="text-sm text-pink-600">Available for distribution</p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-purple-800 mb-2">Recent Support</h3>
-                    <p className="text-2xl font-bold text-purple-600">₹15,000</p>
-                    <p className="text-sm text-purple-600">Given to Rahul Patel</p>
+                    <p className="text-2xl font-bold text-purple-600">₹{goldData?.recent_support?.toLocaleString() || '0'}</p>
+                    <p className="text-sm text-purple-600">Given to {goldData?.last_recipient || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="mt-6">
@@ -121,19 +157,30 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                   Photo Gallery
                 </CardTitle>
                 <CardDescription>
-                  Community memories and event photos
+                  Community memories and event photos ({photoFiles.length} photos)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-                    <div key={item} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                      <Camera className="w-8 h-8 text-gray-400" />
-                    </div>
-                  ))}
+                  {photoFiles.length > 0 ? (
+                    photoFiles.slice(0, 8).map((file) => (
+                      <div key={file.id} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                        <div className="text-center p-2">
+                          <Camera className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                          <p className="text-xs text-gray-500 truncate">{file.filename}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    Array.from({ length: 8 }, (_, i) => (
+                      <div key={i} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-gray-400" />
+                      </div>
+                    ))
+                  )}
                 </div>
                 <div className="mt-6">
-                  <Button className="mr-2">Upload Photos</Button>
+                  <Button className="mr-2" disabled>Upload Photos (Admin Only)</Button>
                   <Button variant="outline">View All</Button>
                 </div>
               </CardContent>
@@ -148,19 +195,30 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                   Video Gallery
                 </CardTitle>
                 <CardDescription>
-                  Event videos and community highlights
+                  Event videos and community highlights ({videoFiles.length} videos)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
-                    <div key={item} className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                      <Video className="w-8 h-8 text-gray-400" />
-                    </div>
-                  ))}
+                  {videoFiles.length > 0 ? (
+                    videoFiles.slice(0, 6).map((file) => (
+                      <div key={file.id} className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
+                        <div className="text-center p-2">
+                          <Video className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                          <p className="text-xs text-gray-500 truncate">{file.filename}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    Array.from({ length: 6 }, (_, i) => (
+                      <div key={i} className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
+                        <Video className="w-8 h-8 text-gray-400" />
+                      </div>
+                    ))
+                  )}
                 </div>
                 <div className="mt-6">
-                  <Button className="mr-2">Upload Video</Button>
+                  <Button className="mr-2" disabled>Upload Video (Admin Only)</Button>
                   <Button variant="outline">View All</Button>
                 </div>
               </CardContent>

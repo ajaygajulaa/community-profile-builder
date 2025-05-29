@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockUsers } from "@/utils/mockData";
+import { getUserByEmail, createUser, type User } from "@/services/database";
 
 interface LoginFormProps {
-  onLogin: (user: any) => void;
+  onLogin: (user: User) => void;
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -24,59 +25,82 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     occupation: "",
     interests: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    const user = mockUsers.find(u => u.email === loginEmail);
-    
-    if (user) {
-      // Check for admin credentials
-      if (user.role === "admin" && loginEmail === "admin@gmail.com" && loginPassword === "admin@123") {
-        onLogin(user);
-        toast({
-          title: "Welcome back Admin!",
-          description: `Successfully logged in as ${user.name}`,
-        });
-        return;
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const user = await getUserByEmail(loginEmail);
+      
+      if (user) {
+        // Check for admin credentials
+        if (user.role === "admin" && loginEmail === "admin@gmail.com" && loginPassword === "admin@123") {
+          onLogin(user);
+          toast({
+            title: "Welcome back Admin!",
+            description: `Successfully logged in as ${user.name}`,
+          });
+          return;
+        }
+        
+        // For regular users, any password works (demo purposes)
+        if (user.role === "member") {
+          onLogin(user);
+          toast({
+            title: "Welcome back!",
+            description: `Successfully logged in as ${user.name}`,
+          });
+          return;
+        }
       }
       
-      // For regular users, any password works (demo purposes)
-      if (user.role === "member") {
-        onLogin(user);
-        toast({
-          title: "Welcome back!",
-          description: `Successfully logged in as ${user.name}`,
-        });
-        return;
-      }
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "An error occurred during login",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    toast({
-      title: "Login failed",
-      description: "Invalid email or password",
-      variant: "destructive",
-    });
   };
 
-  const handleRegister = () => {
-    const newUser = {
-      id: mockUsers.length + 1,
-      name: registerData.name,
-      email: registerData.email,
-      phone: registerData.phone,
-      age: parseInt(registerData.age),
-      occupation: registerData.occupation,
-      interests: registerData.interests.split(",").map(i => i.trim()),
-      role: "member",
-      joinDate: new Date().toISOString().split('T')[0]
-    };
-    
-    mockUsers.push(newUser);
-    onLogin(newUser);
-    toast({
-      title: "Registration successful!",
-      description: `Welcome to our community, ${newUser.name}!`,
-    });
+  const handleRegister = async () => {
+    setIsLoading(true);
+    try {
+      const newUser = await createUser({
+        name: registerData.name,
+        email: registerData.email,
+        phone: registerData.phone,
+        age: parseInt(registerData.age) || undefined,
+        occupation: registerData.occupation,
+        interests: registerData.interests.split(",").map(i => i.trim()).filter(i => i),
+        role: "member",
+        join_date: new Date().toISOString().split('T')[0]
+      });
+      
+      onLogin(newUser);
+      toast({
+        title: "Registration successful!",
+        description: `Welcome to our community, ${newUser.name}!`,
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: "An error occurred during registration",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -124,8 +148,12 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                     onChange={(e) => setLoginPassword(e.target.value)}
                   />
                 </div>
-                <Button onClick={handleLogin} className="w-full bg-green-600 hover:bg-green-700">
-                  Sign In
+                <Button 
+                  onClick={handleLogin} 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing In..." : "Sign In"}
                 </Button>
                 <div className="text-sm text-gray-600 mt-4">
                   <p className="font-medium">Demo Accounts:</p>
@@ -203,8 +231,12 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                     onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                   />
                 </div>
-                <Button onClick={handleRegister} className="w-full bg-green-600 hover:bg-green-700">
-                  Join Community
+                <Button 
+                  onClick={handleRegister} 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Creating Account..." : "Join Community"}
                 </Button>
               </TabsContent>
             </Tabs>
