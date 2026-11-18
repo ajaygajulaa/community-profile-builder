@@ -52,7 +52,7 @@ npm run dev
 
 ## Tests
 
-Run `npm test` to check the login heading and its generated Tailwind color.
+Run `npm test` to check the shared green heading style and app heading markup.
 
 ## What technologies are used for this project?
 

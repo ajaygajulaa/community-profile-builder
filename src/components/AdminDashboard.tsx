@@ -152,7 +152,7 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-xl font-bold">Admin Dashboard</h1>
             </div>
             <Button onClick={onLogout} variant="outline">
               Logout
@@ -296,7 +296,7 @@ const AdminDashboard = ({ currentUser, onLogout }: AdminDashboardProps) => {
                         </span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                        <h3 className="font-semibold">{user.name}</h3>
                         <p className="text-sm text-gray-600">{user.email}</p>
                         <p className="text-sm text-gray-500">{user.occupation} • Age {user.age}</p>
                       </div>
