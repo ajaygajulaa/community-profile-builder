@@ -54,7 +54,7 @@ npm run dev
 
 Run `npm test` to check the shared green heading style, app heading markup, and member welcome age display.
 
-The member home welcome shows the saved age below the user's name, or "Not provided" when no age is saved.
+The member home welcome shows the saved age in red below the user's name, or "Not provided" when no age is saved.
 
 ## What technologies are used for this project?
 

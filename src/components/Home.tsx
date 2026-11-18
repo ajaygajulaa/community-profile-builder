@@ -74,7 +74,7 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-6">
           <h2 className="text-3xl font-bold mb-2">Welcome, {currentUser.name}!</h2>
-          <p className="text-gray-600">Age: {currentUser.age != null ? `${currentUser.age} years old` : 'Not provided'}</p>
+          <p className="text-red-600">Age: {currentUser.age != null ? `${currentUser.age} years old` : 'Not provided'}</p>
           <p className="text-gray-600">Manage community activities and stay connected</p>
         </div>
 
