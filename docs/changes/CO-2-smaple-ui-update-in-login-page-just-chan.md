@@ -11,7 +11,7 @@ Make the login heading red
 ## Decisions
 
 - Used Tailwind's `text-red-700` for a dark, readable red. The heading is shared by the Login and Register tabs; other text is unchanged.
-- The requested existing change note was not present in the checkout or its history, so this note was created at the requested path.
+- The requested PR already exists: [PR #1](https://github.com/ajaygajulaa/community-profile-builder/pull/1).
 
 ## How each criterion is met
 
@@ -23,15 +23,15 @@ Run `npm test`, or run `npm run dev` and inspect the heading on the login page. 
 
 ## Tests
 
-- Added `src/components/LoginForm.test.mjs`. Initial runs failed due to development-only instrumentation and a CSS assertion mismatch; after correcting the test, `npm test` passed (1 test).
+- Earlier attempt added `src/components/LoginForm.test.mjs`. This run: `npm test` passed (1 test).
 - `npm run build`: passed; reported outdated Browserslist data.
 - `npx tsc -b --noEmit`: passed.
-- `npm run lint`: failed on four existing errors in `ui/command.tsx`, `ui/textarea.tsx`, `pages/Index.tsx`, and `tailwind.config.ts`, with ten existing warnings. `npx eslint src/components/LoginForm.tsx src/components/LoginForm.test.mjs` passed.
+- `npm run lint`: failed on four pre-existing errors in `ui/command.tsx`, `ui/textarea.tsx`, `pages/Index.tsx`, and `tailwind.config.ts`, with ten warnings. `npx eslint src/components/LoginForm.tsx src/components/LoginForm.test.mjs` passed.
 - Browser visual and tab interaction checks were not run.
 
 ## Docs updated
 
-- README: documented `npm test`.
+- README: earlier attempt documented `npm test`; no further project documentation changes needed.
 
 ## Open questions
 
