@@ -49,7 +49,7 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Village Youth Hub</h1>
+              <h1 className="text-xl font-bold">Village Youth Hub</h1>
             </div>
           </div>
         </div>

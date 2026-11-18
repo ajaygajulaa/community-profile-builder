@@ -56,7 +56,7 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Village Youth Hub</h1>
+              <h1 className="text-xl font-bold">Village Youth Hub</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Button onClick={onProfileClick} variant="outline" size="sm">
@@ -73,7 +73,7 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {currentUser.name}!</h2>
+          <h2 className="text-3xl font-bold mb-2">Welcome, {currentUser.name}!</h2>
           <p className="text-gray-600">Manage community activities and stay connected</p>
         </div>
 
@@ -99,12 +99,12 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-orange-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-orange-800 mb-2">Current Collection</h3>
+                    <h3 className="font-semibold mb-2">Current Collection</h3>
                     <p className="text-2xl font-bold text-orange-600">₹{ganeshData?.current_amount?.toLocaleString() || '0'}</p>
                     <p className="text-sm text-orange-600">Target: ₹{ganeshData?.target_amount?.toLocaleString() || '50,000'}</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-green-800 mb-2">Contributors</h3>
+                    <h3 className="font-semibold mb-2">Contributors</h3>
                     <p className="text-2xl font-bold text-green-600">{ganeshData?.contributors || 0}</p>
                     <p className="text-sm text-green-600">out of {ganeshData?.total_members || 0} members</p>
                   </div>
@@ -131,12 +131,12 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-pink-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-pink-800 mb-2">Total Fund</h3>
+                    <h3 className="font-semibold mb-2">Total Fund</h3>
                     <p className="text-2xl font-bold text-pink-600">₹{goldData?.total_fund?.toLocaleString() || '0'}</p>
                     <p className="text-sm text-pink-600">Available for distribution</p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-purple-800 mb-2">Recent Support</h3>
+                    <h3 className="font-semibold mb-2">Recent Support</h3>
                     <p className="text-2xl font-bold text-purple-600">₹{goldData?.recent_support?.toLocaleString() || '0'}</p>
                     <p className="text-sm text-purple-600">Given to {goldData?.last_recipient || 'N/A'}</p>
                   </div>
