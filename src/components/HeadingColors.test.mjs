@@ -4,6 +4,11 @@ import { readFile } from "node:fs/promises";
 import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 
+test("app entry loads the shared heading stylesheet", async () => {
+  const entry = await readFile("src/main.tsx", "utf8");
+  assert.match(entry, /import\s+["']\.\/index\.css["']/);
+});
+
 test("generated CSS gives all heading levels the shared green", async () => {
   const source = await readFile("src/index.css", "utf8");
   const result = await postcss([tailwindcss("./tailwind.config.ts")]).process(source, { from: "src/index.css" });
