@@ -41,14 +41,17 @@ describe("member navigation", () => {
     render(<Index />);
     await signIn(user, member.email);
     expect(await screen.findByText("Welcome, Asha!")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Village Youth Hub" }).classList.contains("text-red-600")).toBe(true);
 
     for (let i = 0; i < 2; i++) {
       await user.click(screen.getByRole("button", { name: "Profile" }));
+      expect(screen.getByRole("heading", { name: "Village Youth Hub" }).classList.contains("text-red-600")).toBe(false);
       expect(screen.getByText("Asha")).toBeTruthy();
       expect(screen.getByText(member.email)).toBeTruthy();
       expect(screen.queryByText("Welcome, Asha!")).toBeNull();
       await user.click(screen.getByRole("button", { name: "Back to Home" }));
       expect(screen.getByText("Welcome, Asha!")).toBeTruthy();
+      expect(screen.getByRole("heading", { name: "Village Youth Hub" }).classList.contains("text-red-600")).toBe(true);
       expect(screen.queryByText(member.email)).toBeNull();
     }
   });

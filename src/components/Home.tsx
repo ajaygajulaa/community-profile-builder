@@ -56,7 +56,7 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold">Village Youth Hub</h1>
+              <h1 className="text-xl font-bold text-red-600">Village Youth Hub</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Button onClick={onProfileClick} variant="outline" size="sm">
