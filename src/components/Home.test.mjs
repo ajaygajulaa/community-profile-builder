@@ -4,6 +4,19 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
+test("member home header name is red", async () => {
+  const server = await createServer({ mode: "production", server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  try {
+    const { default: Home } = await server.ssrLoadModule("/src/components/Home.tsx");
+    const html = renderToStaticMarkup(React.createElement(Home, {
+      currentUser: { name: "Asha", age: 25 }, onLogout: () => {}, onProfileClick: () => {},
+    }));
+    assert.match(html, /<h1 class="text-xl font-bold text-red-600">Village Youth Hub<\/h1>/);
+  } finally {
+    await server.close();
+  }
+});
+
 test("member welcome shows saved age in red directly below the name", async () => {
   const server = await createServer({ mode: "production", server: { middlewareMode: true, hmr: false }, appType: "custom" });
   try {
