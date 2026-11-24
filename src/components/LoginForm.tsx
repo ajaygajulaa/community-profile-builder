@@ -20,7 +20,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     name: "",
     email: "",
     password: "",
-    age: "",
     phone: "",
     occupation: "",
     interests: ""
@@ -79,7 +78,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
         name: registerData.name,
         email: registerData.email,
         phone: registerData.phone,
-        age: parseInt(registerData.age) || undefined,
         occupation: registerData.occupation,
         interests: registerData.interests.split(",").map(i => i.trim()).filter(i => i),
         role: "member",
@@ -164,26 +162,14 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
               </TabsContent>
               
               <TabsContent value="register" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Your name"
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      placeholder="25"
-                      value={registerData.age}
-                      onChange={(e) => setRegisterData({...registerData, age: e.target.value})}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your name"
+                    value={registerData.name}
+                    onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-email">Email</Label>
