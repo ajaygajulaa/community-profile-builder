@@ -52,11 +52,11 @@ npm run dev
 
 ## Tests
 
-Run `npm test` to check the shared green heading style, app heading markup, member welcome age display, and Home–Profile navigation. Navigation interaction tests use mocked database data and do not contact Supabase.
+Run `npm test` to check the shared green heading style, app heading markup, registration, member welcome age display, and Home–Profile navigation. Interaction tests use mocked database data and do not contact Supabase.
 
 After signing in, members can select **Profile** on Home to view their details and **Back to Home** to return. Logout is available on both screens; a new member session starts on Home. Administrators continue to use the separate dashboard.
 
-The member home welcome shows the saved age in red below the user's name, or "Not provided" when no age is saved.
+Registration does not ask for age or submit it for new members. Existing saved ages are retained; the member home welcome shows the saved age in red below the user's name, or "Not provided" when no age is saved.
 
 ## What technologies are used for this project?
 
