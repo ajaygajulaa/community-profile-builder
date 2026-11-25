@@ -1,6 +1,6 @@
+import { mockUsers, mockFinances } from "@/utils/mockData";
 
-import { supabase } from "@/integrations/supabase/client";
-
+// This is a local, in-memory demo store. Reloading the page resets all changes.
 export interface User {
   id: string;
   name: string;
@@ -35,129 +35,47 @@ export interface MediaFile {
   uploaded_at: string;
 }
 
-// User operations
-export const getUsers = async (): Promise<User[]> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .order('created_at', { ascending: true });
-  
-  if (error) throw error;
-  
-  return (data || []).map(user => ({
-    ...user,
-    role: user.role as 'admin' | 'member'
-  }));
-};
+let users: User[] = mockUsers.map(({ joinDate, id, role, ...user }) => ({
+  ...user, id: String(id), role: role as User['role'], join_date: joinDate,
+}));
+const finances: FinancialData[] = [
+  { id: 'ganesh', type: 'ganesh_chanda', current_amount: mockFinances.ganeshChanda.currentAmount, target_amount: mockFinances.ganeshChanda.targetAmount, contributors: mockFinances.ganeshChanda.contributors, total_members: mockFinances.ganeshChanda.totalMembers },
+  { id: 'gold', type: 'marriage_gold', total_fund: mockFinances.marriageGold.totalFund, recent_support: mockFinances.marriageGold.recentSupport, last_recipient: mockFinances.marriageGold.lastRecipient },
+];
+const media: MediaFile[] = [];
+const copy = <T>(value: T): T => structuredClone(value);
+let nextId = 0;
+const id = () => `demo-${++nextId}`;
 
-export const getUserByEmail = async (email: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email)
-    .single();
-  
-  if (error && error.code !== 'PGRST116') throw error;
-  
-  if (!data) return null;
-  
-  return {
-    ...data,
-    role: data.role as 'admin' | 'member'
-  };
-};
-
+export const getUsers = async (): Promise<User[]> => copy(users);
+export const getUserByEmail = async (email: string): Promise<User | null> =>
+  copy(users.find(user => user.email.toLowerCase() === email.trim().toLowerCase()) ?? null);
 export const createUser = async (userData: Omit<User, 'id'>): Promise<User> => {
-  const { data, error } = await supabase
-    .from('users')
-    .insert([userData])
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  return {
-    ...data,
-    role: data.role as 'admin' | 'member'
-  };
+  const name = userData.name.trim();
+  const email = userData.email.trim().toLowerCase();
+  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a name and valid email.');
+  if (users.some(user => user.email.toLowerCase() === email)) throw new Error('Email already registered.');
+  const user: User = { ...copy(userData), id: id(), name, email, role: 'member' };
+  users.push(user);
+  return copy(user);
 };
-
 export const deleteUser = async (userId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId);
-  
-  if (error) throw error;
+  if (!users.some(user => user.id === userId && user.role === 'member')) throw new Error('Member not found.');
+  users = users.filter(user => user.id !== userId);
 };
-
-// Financial data operations
-export const getFinancialData = async (): Promise<FinancialData[]> => {
-  const { data, error } = await supabase
-    .from('financial_data')
-    .select('*');
-  
-  if (error) throw error;
-  
-  return (data || []).map(item => ({
-    ...item,
-    type: item.type as 'ganesh_chanda' | 'marriage_gold'
-  }));
+export const getFinancialData = async (): Promise<FinancialData[]> => copy(finances);
+export const updateFinancialData = async (type: FinancialData['type'], updates: Partial<FinancialData>): Promise<void> => {
+  const item = finances.find(entry => entry.type === type);
+  if (!item) throw new Error('Fund not found.');
+  const amount = type === 'ganesh_chanda' ? updates.current_amount : updates.total_fund;
+  if (amount === undefined || !Number.isFinite(amount) || amount < 0) throw new Error('Enter a non-negative amount.');
+  if (type === 'ganesh_chanda') item.current_amount = amount;
+  else item.total_fund = amount;
 };
-
-export const updateFinancialData = async (type: 'ganesh_chanda' | 'marriage_gold', updates: Partial<FinancialData>): Promise<void> => {
-  const { error } = await supabase
-    .from('financial_data')
-    .update(updates)
-    .eq('type', type);
-  
-  if (error) throw error;
-};
-
-// Media file operations
-export const getMediaFiles = async (): Promise<MediaFile[]> => {
-  const { data, error } = await supabase
-    .from('media_files')
-    .select('*')
-    .order('uploaded_at', { ascending: false });
-  
-  if (error) throw error;
-  
-  return (data || []).map(file => ({
-    ...file,
-    file_type: file.file_type as 'image' | 'video'
-  }));
-};
-
+export const getMediaFiles = async (): Promise<MediaFile[]> => copy(media);
 export const uploadMediaFile = async (file: File, description?: string, uploadedBy?: string): Promise<MediaFile> => {
-  // Upload file to storage
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}.${fileExt}`;
-  const filePath = `${fileName}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from('media')
-    .upload(filePath, file);
-
-  if (uploadError) throw uploadError;
-
-  // Save file metadata to database
-  const { data, error } = await supabase
-    .from('media_files')
-    .insert([{
-      filename: fileName,
-      file_type: file.type.startsWith('image/') ? 'image' : 'video',
-      file_size: file.size,
-      description,
-      uploaded_by: uploadedBy
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
-  
-  return {
-    ...data,
-    file_type: data.file_type as 'image' | 'video'
-  };
+  if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) throw new Error('Select an image or video.');
+  const entry: MediaFile = { id: id(), filename: file.name, file_type: file.type.startsWith('image/') ? 'image' : 'video', file_size: file.size, description, uploaded_by: uploadedBy, uploaded_at: new Date().toISOString() };
+  media.unshift(entry);
+  return copy(entry);
 };

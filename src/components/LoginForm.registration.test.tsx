@@ -66,12 +66,39 @@ describe("registration", () => {
     const onLogin = vi.fn();
     render(<LoginForm onLogin={onLogin} />);
     const user = await openRegistration();
+    await user.type(screen.getByLabelText("Full Name"), "Asha");
+    await user.type(screen.getByLabelText("Email"), "asha@example.com");
     await user.click(screen.getByRole("button", { name: "Join Community" }));
 
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({
       title: "Registration failed", variant: "destructive",
     })));
+    expect(createUser).toHaveBeenCalledTimes(1);
     expect(onLogin).not.toHaveBeenCalled();
     expect((screen.getByRole("button", { name: "Join Community" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("surfaces duplicate-email errors", async () => {
+    vi.mocked(createUser).mockRejectedValue(new Error("Email already registered."));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const onLogin = vi.fn();
+    render(<LoginForm onLogin={onLogin} />);
+    const user = await openRegistration();
+    await user.type(screen.getByLabelText("Full Name"), "Asha");
+    await user.type(screen.getByLabelText("Email"), "asha@example.com");
+    await user.click(screen.getByRole("button", { name: "Join Community" }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ description: "Email already registered." })));
+    expect(onLogin).not.toHaveBeenCalled();
+  });
+
+  it("validates name and email before creating a user", async () => {
+    render(<LoginForm onLogin={vi.fn()} />);
+    const user = await openRegistration();
+    await user.click(screen.getByRole("button", { name: "Join Community" }));
+    await user.type(screen.getByLabelText("Full Name"), "Asha");
+    await user.type(screen.getByLabelText("Email"), "invalid");
+    await user.click(screen.getByRole("button", { name: "Join Community" }));
+    expect(createUser).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ description: "Enter a name and valid email." }));
   });
 });

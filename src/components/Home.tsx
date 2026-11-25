@@ -16,6 +16,8 @@ interface HomeProps {
 const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [financeStatus, setFinanceStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [mediaStatus, setMediaStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,22 +25,18 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
   }, []);
 
   const loadData = async () => {
-    try {
-      const [financialDataResult, mediaFilesResult] = await Promise.all([
-        getFinancialData(),
-        getMediaFiles()
-      ]);
-      
-      setFinancialData(financialDataResult);
-      setMediaFiles(mediaFilesResult);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load data",
-        variant: "destructive",
-      });
-    }
+    setFinanceStatus('loading');
+    setMediaStatus('loading');
+    await Promise.all([
+      getFinancialData().then(data => { setFinancialData(data); setFinanceStatus('ready'); }).catch(() => {
+        setFinanceStatus('error');
+        toast({ title: "Error", description: "Failed to load funds", variant: "destructive" });
+      }),
+      getMediaFiles().then(data => { setMediaFiles(data); setMediaStatus('ready'); }).catch(() => {
+        setMediaStatus('error');
+        toast({ title: "Error", description: "Failed to load gallery", variant: "destructive" });
+      }),
+    ]);
   };
 
   const ganeshData = financialData.find(f => f.type === 'ganesh_chanda');
@@ -78,6 +76,9 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
           <p className="text-gray-600">Manage community activities and stay connected</p>
         </div>
 
+        <p className="text-sm text-gray-600 mb-4">Static demo: changes reset on page reload. Gallery entries show filenames only.</p>
+        {(financeStatus === 'loading' || mediaStatus === 'loading') && <p>Loading demo data...</p>}
+        {(financeStatus === 'error' || mediaStatus === 'error') && <div role="alert">Some demo data could not be loaded. <Button onClick={loadData}>Retry</Button></div>}
         <Tabs defaultValue="ganesh-chanda" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="ganesh-chanda">Ganesh Chanda</TabsTrigger>
@@ -98,21 +99,22 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                {financeStatus === 'ready' && !ganeshData && <p>No Ganesh fund data.</p>}
+                {financeStatus === 'ready' && ganeshData && <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-orange-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Current Collection</h3>
                     <p className="text-2xl font-bold text-orange-600">₹{ganeshData?.current_amount?.toLocaleString() || '0'}</p>
-                    <p className="text-sm text-orange-600">Target: ₹{ganeshData?.target_amount?.toLocaleString() || '50,000'}</p>
+                    <p className="text-sm text-orange-600">Target: ₹{ganeshData?.target_amount?.toLocaleString() ?? 'Not available'}</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Contributors</h3>
                     <p className="text-2xl font-bold text-green-600">{ganeshData?.contributors || 0}</p>
                     <p className="text-sm text-green-600">out of {ganeshData?.total_members || 0} members</p>
                   </div>
-                </div>
+                </div>}
                 <div className="mt-6">
-                  <Button className="mr-2">Add Contribution</Button>
-                  <Button variant="outline">View Details</Button>
+                  <Button className="mr-2" disabled>Add Contribution</Button>
+                  <Button variant="outline" disabled>View Details</Button>
                 </div>
               </CardContent>
             </Card>
@@ -130,7 +132,8 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                {financeStatus === 'ready' && !goldData && <p>No marriage fund data.</p>}
+                {financeStatus === 'ready' && goldData && <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-pink-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Total Fund</h3>
                     <p className="text-2xl font-bold text-pink-600">₹{goldData?.total_fund?.toLocaleString() || '0'}</p>
@@ -141,10 +144,10 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                     <p className="text-2xl font-bold text-purple-600">₹{goldData?.recent_support?.toLocaleString() || '0'}</p>
                     <p className="text-sm text-purple-600">Given to {goldData?.last_recipient || 'N/A'}</p>
                   </div>
-                </div>
+                </div>}
                 <div className="mt-6">
-                  <Button className="mr-2">Request Support</Button>
-                  <Button variant="outline">View Recipients</Button>
+                  <Button className="mr-2" disabled>Request Support</Button>
+                  <Button variant="outline" disabled>View Recipients</Button>
                 </div>
               </CardContent>
             </Card>
@@ -172,17 +175,11 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                         </div>
                       </div>
                     ))
-                  ) : (
-                    Array.from({ length: 8 }, (_, i) => (
-                      <div key={i} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Camera className="w-8 h-8 text-gray-400" />
-                      </div>
-                    ))
-                  )}
+                  ) : mediaStatus === 'ready' ? <p>No photos yet.</p> : null}
                 </div>
                 <div className="mt-6">
                   <Button className="mr-2" disabled>Upload Photos (Admin Only)</Button>
-                  <Button variant="outline">View All</Button>
+                  <Button variant="outline" disabled>View All</Button>
                 </div>
               </CardContent>
             </Card>
@@ -210,17 +207,11 @@ const Home = ({ currentUser, onLogout, onProfileClick }: HomeProps) => {
                         </div>
                       </div>
                     ))
-                  ) : (
-                    Array.from({ length: 6 }, (_, i) => (
-                      <div key={i} className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Video className="w-8 h-8 text-gray-400" />
-                      </div>
-                    ))
-                  )}
+                  ) : mediaStatus === 'ready' ? <p>No videos yet.</p> : null}
                 </div>
                 <div className="mt-6">
                   <Button className="mr-2" disabled>Upload Video (Admin Only)</Button>
-                  <Button variant="outline">View All</Button>
+                  <Button variant="outline" disabled>View All</Button>
                 </div>
               </CardContent>
             </Card>

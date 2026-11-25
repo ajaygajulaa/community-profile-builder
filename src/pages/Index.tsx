@@ -5,13 +5,14 @@ import LoginForm from "@/components/LoginForm";
 import Home from "@/components/Home";
 import UserProfile from "@/components/UserProfile";
 import AdminDashboard from "@/components/AdminDashboard";
+import type { User } from "@/services/database";
 
 const Index = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState("home"); // "home" or "profile"
   const { toast } = useToast();
 
-  const handleLogin = (user: any) => {
+  const handleLogin = (user: User) => {
     setCurrentUser(user);
     setCurrentView("home");
   };
