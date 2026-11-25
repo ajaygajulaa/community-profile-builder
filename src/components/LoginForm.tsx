@@ -28,13 +28,15 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const { toast } = useToast();
 
   const handleLogin = async () => {
+    if (isLoading) return;
     setIsLoading(true);
     try {
-      const user = await getUserByEmail(loginEmail);
+      const email = loginEmail.trim().toLowerCase();
+      const user = await getUserByEmail(email);
       
       if (user) {
         // Check for admin credentials
-        if (user.role === "admin" && loginEmail === "admin@gmail.com" && loginPassword === "admin@123") {
+        if (user.role === "admin" && email === "admin@gmail.com" && loginPassword === "admin@123") {
           onLogin(user);
           toast({
             title: "Welcome back Admin!",
@@ -72,11 +74,16 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   };
 
   const handleRegister = async () => {
+    if (isLoading) return;
+    if (!registerData.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email.trim())) {
+      toast({ title: "Registration failed", description: "Enter a name and valid email.", variant: "destructive" });
+      return;
+    }
     setIsLoading(true);
     try {
       const newUser = await createUser({
-        name: registerData.name,
-        email: registerData.email,
+        name: registerData.name.trim(),
+        email: registerData.email.trim().toLowerCase(),
         phone: registerData.phone,
         occupation: registerData.occupation,
         interests: registerData.interests.split(",").map(i => i.trim()).filter(i => i),
@@ -93,7 +100,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
       console.error('Registration error:', error);
       toast({
         title: "Registration failed",
-        description: "An error occurred during registration",
+        description: error instanceof Error ? error.message : "An error occurred during registration",
         variant: "destructive",
       });
     } finally {
@@ -110,6 +117,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </div>
           <h1 className="text-3xl font-bold mb-2">Village Youth Hub</h1>
           <p className="text-gray-600">Connect with your community</p>
+          <p className="text-sm text-gray-600">Static demo only: changes reset on page reload. Do not enter sensitive information.</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -162,6 +170,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
               </TabsContent>
               
               <TabsContent value="register" className="space-y-4">
+                <p className="text-sm text-gray-600">Demo only: passwords are not saved or checked for members.</p>
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input

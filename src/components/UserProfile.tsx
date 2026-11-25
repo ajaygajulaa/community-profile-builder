@@ -15,7 +15,7 @@ interface UserProfileProps {
 }
 
 const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) => {
-  const [totalMembers, setTotalMembers] = useState(0);
+  const [totalMembers, setTotalMembers] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Age</Label>
-                    <p className="text-gray-900">{currentUser.age ? `${currentUser.age} years old` : 'Not provided'}</p>
+                    <p className="text-gray-900">{currentUser.age != null ? `${currentUser.age} years old` : 'Not provided'}</p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -122,7 +122,7 @@ const UserProfile = ({ currentUser, onLogout, onBackToHome }: UserProfileProps) 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-green-600">{totalMembers}</p>
+                  <p className="text-2xl font-bold text-green-600">{totalMembers ?? 'Unavailable'}</p>
                   <p className="text-sm text-gray-600">Active Members</p>
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">

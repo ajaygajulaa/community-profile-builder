@@ -52,11 +52,15 @@ npm run dev
 
 ## Tests
 
-Run `npm test` to check the shared green heading style, app heading markup, registration, member welcome age display, and Home–Profile navigation. Interaction tests use mocked database data and do not contact Supabase.
+Run `npm test`, `npm run build`, `npx tsc -p tsconfig.app.json --noEmit` and `npm run lint`. Tests include a local demo flow and component interaction tests.
 
-After signing in, members can select **Profile** on Home to view their details and **Back to Home** to return. Logout is available on both screens; a new member session starts on Home. Administrators continue to use the separate dashboard.
+## Static demo limitations
 
-Registration does not ask for age or submit it for new members. Existing saved ages are retained; the member home welcome shows the saved age in red below the user's name, or "Not provided" when no age is saved.
+There is no database, storage service or real authentication. Data comes from `src/utils/mockData.ts` and is held in memory in the current page only. Registration, fund edits, removals and gallery entries reset on reload and are not shared with other tabs or users. Gallery uploads add filenames only; file contents are not stored or displayed. Inactive contribution and gallery controls are disabled. Do not enter sensitive information or use this demo for real community data.
+
+Sign in as `priya.sharma@gmail.com` with any password, or as `admin@gmail.com` with `admin@123`. Member passwords, including the registration password, are not saved or checked. These credentials do not provide security. Registration requires a name and valid, unique email and does not ask for age. Seeded members may have an age; new members show "Not provided".
+
+Members can select **Profile** on Home and **Back to Home** to return. Logout is available on both screens; a new session starts on Home. Administrators have a separate demo dashboard.
 
 ## What technologies are used for this project?
 

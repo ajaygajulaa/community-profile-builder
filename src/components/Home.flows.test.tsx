@@ -1,0 +1,23 @@
+import React from "react";
+import { afterEach, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Home from "./Home";
+import { getFinancialData, getMediaFiles } from "@/services/database";
+vi.mock("@/services/database", () => ({ getFinancialData: vi.fn(), getMediaFiles: vi.fn() }));
+vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: vi.fn() }) }));
+afterEach(() => { cleanup(); vi.resetAllMocks(); });
+it("shows independent gallery data on fund failure and retries with zero values", async () => {
+  vi.mocked(getFinancialData).mockRejectedValueOnce(new Error("failed")).mockResolvedValue([{ id: "1", type: "ganesh_chanda", current_amount: 0, target_amount: 0 }]);
+  vi.mocked(getMediaFiles).mockResolvedValue([{ id: "1", filename: "photo.png", file_type: "image", uploaded_at: "2024-01-01" }]);
+  const user = userEvent.setup();
+  render(<Home currentUser={{ id: "1", name: "Asha", email: "a@example.com", role: "member", join_date: "2024-01-01" }} onLogout={() => {}} onProfileClick={() => {}} />);
+  expect(await screen.findByRole("alert")).toBeTruthy();
+  await user.click(screen.getByRole("tab", { name: "Photos" }));
+  expect(screen.getByText("photo.png")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Retry" }));
+  await user.click(screen.getByRole("tab", { name: "Ganesh Chanda" }));
+  expect(await screen.findByText("Target: ₹0")).toBeTruthy();
+  await user.click(screen.getByRole("tab", { name: "Videos" }));
+  expect(screen.getByText("No videos yet.")).toBeTruthy();
+});
