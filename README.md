@@ -52,7 +52,9 @@ npm run dev
 
 ## Tests
 
-Run `npm test` to check the shared green heading style, app heading markup, registration, member welcome age display, and Home–Profile navigation. Interaction tests use mocked database data and do not contact Supabase.
+Run `npm test` to check the shared green heading style, the pink login and registration screen, authentication, member welcome age display, and Home–Profile navigation. Interaction tests use mocked database data and do not contact Supabase.
+
+The login and registration screen uses a local pink palette; headings and colors elsewhere retain their existing styles.
 
 After signing in, members can select **Profile** on Home to view their details and **Back to Home** to return. Logout is available on both screens; a new member session starts on Home. Administrators continue to use the separate dashboard.
 

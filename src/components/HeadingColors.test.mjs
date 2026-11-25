@@ -21,11 +21,15 @@ test("generated CSS gives all heading levels the shared green", async () => {
   });
   assert.ok(headingRule, "generated CSS contains the heading color rule");
   assert.equal(headingRule.nodes.find((node) => node.prop === "color").value, "#166534");
+  let pinkHeadingRule;
+  root.walkRules((rule) => {
+    if (rule.selector === ".text-pink-800" && rule.nodes.some((node) => node.prop === "color")) pinkHeadingRule = rule;
+  });
+  assert.ok(pinkHeadingRule, "generated CSS contains the local pink heading utility");
 });
 
-test("app headings and card titles have no overriding color classes", async () => {
+test("non-authentication headings and card titles have no overriding color classes", async () => {
   for (const [file, minimum] of [
-    ["src/components/LoginForm.tsx", 2],
     ["src/components/Home.tsx", 10],
     ["src/components/AdminDashboard.tsx", 10],
     ["src/components/UserProfile.tsx", 3],
@@ -39,6 +43,10 @@ test("app headings and card titles have no overriding color classes", async () =
       assert.doesNotMatch(openingTag, /\bstyle=/, `${file}: ${openingTag}`);
     }
   }
+  const login = await readFile("src/components/LoginForm.tsx", "utf8");
+  const loginHeadings = [...login.matchAll(/<(?:h[1-6]|CardTitle)\b[^>]*>/g)];
+  assert.equal(loginHeadings.length, 2);
+  for (const [openingTag] of loginHeadings) assert.match(openingTag, /\btext-pink-800\b/);
   const card = await readFile("src/components/ui/card.tsx", "utf8");
   assert.match(card, /<h3\s+ref=\{ref\}/);
   const home = await readFile("src/components/Home.tsx", "utf8");
