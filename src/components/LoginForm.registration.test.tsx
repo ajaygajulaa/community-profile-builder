@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginForm from "./LoginForm";
-import { createUser } from "@/services/database";
+import { createUser, getUserByEmail } from "@/services/database";
 
 vi.mock("@/services/database", () => ({ createUser: vi.fn(), getUserByEmail: vi.fn() }));
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }));
@@ -20,6 +20,55 @@ async function openRegistration() {
   await user.click(screen.getByRole("tab", { name: "Register" }));
   return user;
 }
+
+describe("authentication styling and login", () => {
+  it("styles both tabs and their actions in pink with visible focus and hover states", async () => {
+    render(<LoginForm onLogin={vi.fn()} />);
+    const user = userEvent.setup();
+    const login = screen.getByRole("tab", { name: "Login" });
+    const register = screen.getByRole("tab", { name: "Register" });
+    expect(login.parentElement?.className).toContain("bg-pink-100");
+    for (const tab of [login, register]) {
+      for (const color of ["text-pink-900", "hover:bg-pink-200", "focus-visible:ring-pink-700", "data-[state=active]:bg-pink-700", "data-[state=active]:text-white", "data-[state=active]:hover:bg-pink-800"]) {
+        expect(tab.className).toContain(color);
+      }
+    }
+    expect(login.getAttribute("data-state")).toBe("active");
+    const checkAction = (button: HTMLElement) => {
+      for (const color of ["bg-pink-700", "text-white", "hover:bg-pink-800", "focus-visible:ring-pink-700"]) expect(button.className).toContain(color);
+    };
+    checkAction(screen.getByRole("button", { name: "Sign In" }));
+    await user.click(register);
+    expect(register.getAttribute("data-state")).toBe("active");
+    expect(login.getAttribute("data-state")).toBe("inactive");
+    checkAction(screen.getByRole("button", { name: "Join Community" }));
+    await user.click(login);
+    expect(login.getAttribute("data-state")).toBe("active");
+  });
+
+  it("still signs in a member", async () => {
+    const member = { id: "1", name: "Asha", email: "asha@example.com", role: "member" as const, join_date: "2024-01-01" };
+    vi.mocked(getUserByEmail).mockResolvedValue(member);
+    const onLogin = vi.fn();
+    render(<LoginForm onLogin={onLogin} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("Email"), member.email);
+    await user.type(screen.getByLabelText("Password"), "password");
+    await user.click(screen.getByRole("button", { name: "Sign In" }));
+    await waitFor(() => expect(onLogin).toHaveBeenCalledWith(member));
+    expect(getUserByEmail).toHaveBeenCalledWith(member.email);
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Welcome back!" }));
+  });
+
+  it("still reports a failed login", async () => {
+    vi.mocked(getUserByEmail).mockResolvedValue(null);
+    const onLogin = vi.fn();
+    render(<LoginForm onLogin={onLogin} />);
+    await userEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Login failed", variant: "destructive" })));
+    expect(onLogin).not.toHaveBeenCalled();
+  });
+});
 
 describe("registration", () => {
   it("shows the remaining fields without age and gives name the full row", async () => {

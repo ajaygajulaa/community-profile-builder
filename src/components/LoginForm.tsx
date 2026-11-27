@@ -102,28 +102,28 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-700 rounded-full mb-4">
             <Users className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Village Youth Hub</h1>
+          <h1 className="text-3xl font-bold mb-2 text-pink-800">Village Youth Hub</h1>
           <p className="text-gray-600">Connect with your community</p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Welcome</CardTitle>
+            <CardTitle className="text-2xl text-center text-pink-800">Welcome</CardTitle>
             <CardDescription className="text-center">
               Join our growing community of young changemakers
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-pink-100">
+                <TabsTrigger value="login" className="text-pink-900 hover:bg-pink-200 focus-visible:ring-pink-700 data-[state=active]:bg-pink-700 data-[state=active]:text-white data-[state=active]:hover:bg-pink-800">Login</TabsTrigger>
+                <TabsTrigger value="register" className="text-pink-900 hover:bg-pink-200 focus-visible:ring-pink-700 data-[state=active]:bg-pink-700 data-[state=active]:text-white data-[state=active]:hover:bg-pink-800">Register</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login" className="space-y-4">
@@ -148,7 +148,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 </div>
                 <Button 
                   onClick={handleLogin} 
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-pink-700 text-white hover:bg-pink-800 focus-visible:ring-pink-700"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing In..." : "Sign In"}
@@ -219,7 +219,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 </div>
                 <Button 
                   onClick={handleRegister} 
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-pink-700 text-white hover:bg-pink-800 focus-visible:ring-pink-700"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating Account..." : "Join Community"}
